@@ -24,13 +24,12 @@ public class NetworkList extends JFrame implements ActionListener
     JButton about = new JButton("About"); 
     JButton quit = new JButton("Quit"); 
     String output;
-    String output2;
-    String output3;														//may or may not be used
-    String output4;
     JScrollPane scroll = new JScrollPane();
     ArrayList<LinkedList<NetworkNode>> AdjacencyList = new ArrayList<LinkedList<NetworkNode>>(); 
     static boolean startingNode = false;		//true if we have a starting node already
-    
+    static NetworkNode startNode; 
+    JTextArea textArea = new JTextArea(24,32);
+    JScrollPane scrollPane = new JScrollPane(textArea);
     
     
     public static void main(String[] arguments)
@@ -53,10 +52,14 @@ public class NetworkList extends JFrame implements ActionListener
         setLocation(600, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Display.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
+        
+        
+        textArea.setText("fdsssssssssssssssssssssssssssssssssssssssssssfds");
+        Display.getContentPane().add(scrollPane, BorderLayout.CENTER); 
+        
         setLayout(flow);
         Add.addActionListener(this);
         restart.addActionListener(this);
-        quit.addActionListener(this);
         process.addActionListener(this);
         help.addActionListener(this);
         about.addActionListener(this);
@@ -77,7 +80,7 @@ public class NetworkList extends JFrame implements ActionListener
 
     public void actionPerformed(ActionEvent e)
     {
-        if(e.getSource() == Add)
+        if(e.getSource() == Add) 
         {
             try
             {
@@ -87,37 +90,70 @@ public class NetworkList extends JFrame implements ActionListener
                 NetworkNode temp = new NetworkNode(name, dur, depend);
                 if(name.equals(""))
                 {
-                	Display.add(new JLabel("<html>Node must have a name!<br><br>This node was NOT added.</html>"));
+                	textArea.setText("Node must have a name!\n\nThis node was NOT added."); 
+                	Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
                 }
                 else if(startingNode == true && (depend.equals("")))
                 {
-                	Display.add(new JLabel("<html>A starting node has already been entered. <br>Please enter a Node that has dependencies. <br><br>This node was NOT added as a result.</html>"));
+                	textArea.setText("A starting node has already been entered. \nPlease enter a Node that has dependencies. \n\nThis node was NOT added as a result.");
+                	Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
                 }
                 else
                 {
-                	if( !(AdjacencyList.contains(temp)))
+                	boolean alreadyInNetwork = false;
+                	for(int i = 0; i < AdjacencyList.size(); i++)
+                	{
+                		String checker = AdjacencyList.get(i).getFirst().getName();
+                		if(checker.equals(temp.getName()))
+                		{
+                			alreadyInNetwork = true; 
+                			break;
+                		}
+                	}
+                	if(alreadyInNetwork == true)
+                	{
+                		textArea.setText("Node not added.\n\nYou've already added this node.\nIf you'd like to change node properties, you must restart.");
+                		Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
+                	}
+                	else
+                	{
+                		LinkedList<NetworkNode> temp2 = new LinkedList<NetworkNode>();
+                    	temp2.add(temp);
+                    	AdjacencyList.add(temp2);		//add to array
+                    	if(depend.equals(""))
+    	                {
+    	                	startingNode = true;
+    	                	startNode = temp; 
+    	                }
+    	                //now, we should parse out it's dependencies.
+    	                StringTokenizer multiTokenizer = new StringTokenizer(depend, ",");
+    	                while (multiTokenizer.hasMoreTokens())
+    	                {
+    	                	String token = multiTokenizer.nextToken();
+    	                	for(int i = 0; i < AdjacencyList.size(); i++)							//hunt through the Adjacency List
+    	                	{
+    	                		if(AdjacencyList.get(i).getFirst().getName().equals(token))	//if the dependency is in the list, add it.
+    	                		{
+    	                			AdjacencyList.get(i).add(temp);
+    	                		} 
+    	                	}
+    	                }
+    	                textArea.setText("Node added successfully!");
+    	                Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
+                	}
+                	/*if( !(AdjacencyList.contains(temp)))
                     {
                     	LinkedList<NetworkNode> temp2 = new LinkedList<NetworkNode>();
                     	temp2.add(temp);
                     	AdjacencyList.add(temp2);		//add to array
                     }
-	                if(depend.equals(""))
-	                {
-	                	startingNode = true;
-	                }
-	                //now, we should parse out it's dependencies.
-	                StringTokenizer multiTokenizer = new StringTokenizer(depend, ",");
-	                while (multiTokenizer.hasMoreTokens())
-	                {
-	                	String token = multiTokenizer.nextToken();
-	                	for(int i = 0; i < AdjacencyList.size(); i++)							//hunt through the Adjacency List
-	                	{
-	                		if(AdjacencyList.get(i).getFirst().getName().equals(token))	//if the dependency is in the list, add it.
-	                		{
-	                			AdjacencyList.get(i).add(temp);
-	                		} 
-	                	}
-	                }
+                	else
+                	{
+                		textArea.setText("Node not added.\n\nYou've already added this node.\nIf you'd like to change node properties, you must restart.");
+                		Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
+                	}*/
+	                 
+
                 }
                 
                 
@@ -127,7 +163,8 @@ public class NetworkList extends JFrame implements ActionListener
             	String exception = ex.getMessage();
             	if(exception.substring(0, 16).equals("For input string"))
             	{
-            		Display.add(new JLabel("<html>Data format(s) incorrect. Ensure that:<br>1)    Name is a string.<br>2)    Duration is an integer.<br>3)    Dependencies are lists of Nodes, separated only<br>by a comma (no spaces). Example: \"A,B,C,D\" </html>"));
+            		textArea.setText("Data format(s) incorrect. Ensure that:\n1)    Name is a string.\n2)    Duration is an integer.\n3)    Dependencies are lists of Nodes, separated only\nby a comma (no spaces). Example: \"A,B,C,D\" ");
+                    Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
             	}
             }
 
@@ -176,8 +213,14 @@ public class NetworkList extends JFrame implements ActionListener
         {
             if(AdjacencyList.size() < 2)
             {
-            	Display.add(new JLabel("<html>Cannot process: Less than 2 Nodes Entered.<br><br>The input values are still in the system, please continue.<html>"));					//check this. 2+ nodes needed for list?
-            }
+            	textArea.setText("Cannot process: Less than 2 Nodes Entered.\n\nThe input values are still in the system, please continue."); 					//check this. 2+ nodes needed for list?
+            } 
+            
+            
+            
+            
+            
+            
             ActivityNameF.setText("");
         	DependenciesF.setText("");
         	DurationF.setText("");
@@ -204,6 +247,7 @@ public class NetworkList extends JFrame implements ActionListener
 
         }
     }
+    
 }
 
 
