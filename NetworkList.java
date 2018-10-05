@@ -30,6 +30,14 @@ public class NetworkList extends JFrame implements ActionListener
     static NetworkNode startNode; 
     JTextArea textArea = new JTextArea(24,32);
     JScrollPane scrollPane = new JScrollPane(textArea);
+    NetworkNode endNode;
+    String teststr = "";
+    boolean punter;
+    int localcount = 0;
+    String teststr2 = "";  
+    
+    
+    
     
     
     public static void main(String[] arguments)
@@ -54,7 +62,7 @@ public class NetworkList extends JFrame implements ActionListener
         Display.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
         
         
-        textArea.setText("fdsssssssssssssssssssssssssssssssssssssssssssfds");
+
         Display.getContentPane().add(scrollPane, BorderLayout.CENTER); 
         
         setLayout(flow);
@@ -68,7 +76,7 @@ public class NetworkList extends JFrame implements ActionListener
         add(blabel);
         add(DurationF);
         add(clabel); 
-        add(DependenciesF);
+        add(DependenciesF); 
         add(dlabel);
         add(Add);
         add(restart);
@@ -138,22 +146,9 @@ public class NetworkList extends JFrame implements ActionListener
     	                		} 
     	                	}
     	                }
-    	                textArea.setText("Node added successfully!");
+    	                textArea.setText("Node " + temp.getName() + " added successfully!");
     	                Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
                 	}
-                	/*if( !(AdjacencyList.contains(temp)))
-                    {
-                    	LinkedList<NetworkNode> temp2 = new LinkedList<NetworkNode>();
-                    	temp2.add(temp);
-                    	AdjacencyList.add(temp2);		//add to array
-                    }
-                	else
-                	{
-                		textArea.setText("Node not added.\n\nYou've already added this node.\nIf you'd like to change node properties, you must restart.");
-                		Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
-                	}*/
-	                 
-
                 }
                 
                 
@@ -170,19 +165,7 @@ public class NetworkList extends JFrame implements ActionListener
 
             if(!(false))		//this should be the exception
             {
-                /*//int pizzaNum = pizzaBox.getSelectedIndex();
-                totalPrice = pizzaPrice[pizzaNum];
-                output = "$" + totalPrice;
-                output2 = "$" +((double)(totalPrice * .05)) + " ";								//consider this section what we want to do/display.
-                output3 = "$" +((double)(totalPrice + (totalPrice * .05))) + " ";				//this is old code that can be deleted, but we can use it as a baseline.
-                a = a + ((double)(multiplier*(totalPrice + (totalPrice * .05)))) ;
-                totalPriceField.setText(output);
-                taxPriceField.setText(output2);
-                endPriceField.setText(output3);
-                finalPriceField.setText("$" + Double.toString(a));
-                //for(int i = 0; i < multiplier; i++)
-                //    Display.add(new JLabel(pizzaBox.getSelectedItem().toString() + " " + colorBox.getSelectedItem().toString() + "Skateboard"));
-                */
+                
             	ActivityNameF.setText("");
             	DependenciesF.setText("");
             	DurationF.setText("");
@@ -194,6 +177,10 @@ public class NetworkList extends JFrame implements ActionListener
         }
         if(e.getSource() == restart)
         {
+        	
+        	//this section should wipe all data from the program.clear the arraylist, etc.
+        	
+        	
             /*quantityField.setText("");
             totalPriceField.setText(""); 
             taxPriceField.setText("");
@@ -214,14 +201,19 @@ public class NetworkList extends JFrame implements ActionListener
             if(AdjacencyList.size() < 2)
             {
             	textArea.setText("Cannot process: Less than 2 Nodes Entered.\n\nThe input values are still in the system, please continue."); 					//check this. 2+ nodes needed for list?
-            } 
+            }             
+            else
+            {
+            	
+	            String test = printPaths(AdjacencyList, startNode);
+	            test = "All Paths in the Network:\n\n" + test;
+	            textArea.setText("" + test); 
+	            Display.getContentPane().add(scrollPane, BorderLayout.CENTER);  
+            }
             
             
             
-            
-            
-            
-            ActivityNameF.setText("");
+            ActivityNameF.setText(""); 
         	DependenciesF.setText("");
         	DurationF.setText("");
             Display.invalidate();						//very important!!!! 
@@ -247,6 +239,182 @@ public class NetworkList extends JFrame implements ActionListener
 
         }
     }
+    
+    
+    public String printPaths(ArrayList<LinkedList<NetworkNode>> AList, NetworkNode starter)				//CAN'T FORGET TO CLEAR ALL DATA AT VERY END
+    {
+    	String toReturn = "";  
+    	NetworkNode tracker = null;  
+    	boolean pushedFlag = false;  
+    	boolean poppedFlag = false; 
+    	int count = 0;
+    	String nodesInPath = "";
+    	for(int i = 0; i < AList.size(); i++) 
+    	{
+    		AList.get(i).add(null);							//the LinkedList class is weird. had to append a null onto each linked list.
+    	}
+    	
+    	//let's find our END node
+    	for(int i = 0; i < AList.size(); i++)
+    	{
+    		if(AList.get(i).get(1) == null)  
+    		{
+    			endNode = AList.get(i).getFirst();
+    		}
+    	}
+    	
+    	//okay, now let's make a stack for a DFS
+    	Stack<NetworkNode> stack = new Stack<NetworkNode>(); 
+    	stack.push(starter);
+    	
+    	while(!stack.empty())
+    	{
+    		
+    		
+	    	NetworkNode current = stack.peek();
+	    	int arrIndex = AList.indexOf(current);
+	    	
+	    	
+	    	for(int i = 0; i < AList.size(); i++)
+	    	{
+	    		if(AList.get(i).getFirst() == current)
+	    		{
+	    			arrIndex = AList.indexOf(AList.get(i));
+	    			break;
+	    		}
+	    	}
+	    	if(AList.get(arrIndex).get(1) == null) 
+	    	{
+	    		break;
+	    	}
+	    	ListIterator<NetworkNode> iterator = AList.get(arrIndex).listIterator(1);
+	    	while(iterator.hasNext())
+	    	{
+	    		pushedFlag = false;
+	    		poppedFlag = false;
+	    		NetworkNode a = iterator.next();
+	    		for(int i = 0; i < AList.size(); i++)
+	        	{
+	        		if(AList.get(i).getFirst() == a)
+	        		{ 
+	        			if(AList.get(i).get(1) != null)
+	            		{
+	            			stack.push(AList.get(i).getFirst());
+	            			for(int j = 0; j < AList.size(); j++)
+	            	    	{
+	            	    		if(AList.get(j).getFirst() == stack.peek())
+	            	    		{
+	            	    			arrIndex = AList.indexOf(AList.get(j));
+	            	    			break;
+	            	    		}
+	            	    	}
+	            			pushedFlag = true;
+	            			iterator = AList.get(arrIndex).listIterator(1); 
+	            		}
+	        			else
+	        			{
+	        				stack.push(AList.get(i).getFirst());
+	        				Iterator<NetworkNode> stackIterator = stack.iterator();
+	        				Iterator<NetworkNode> stackIterator2 = stack.iterator();
+	        				if(stack.peek() == endNode)
+	        				{
+	        					localcount = 0;
+	        					teststr = "";
+		        				while (stackIterator.hasNext())  
+		        				{
+		        				   teststr += stackIterator.next().getName(); 							//this is where we should be storing our data so we can organize it in DESCENDING order.
+		        				   localcount += stackIterator2.next().getDuration(); 				//i'd probably consider putting each string into an array of strings, then just sorting that, but i'm not sure.
+		        				   punter = true; 
+		        				   
+		        				}
+		        				teststr2 += teststr + ": " + localcount;
+		        				teststr2 += "\n"; 
+		        				stack.pop();
+	        				}
+	        				//tally count
+	        				count += AList.get(i).getFirst().getDuration();  
+	        				tracker = stack.pop();					//when we pop off the stack, we should remove it's apearance (1 level only?) "upstream" of where it was.
+	        				count += tracker.getDuration();
+	        				nodesInPath += AList.get(i).getFirst().getName();
+	        				nodesInPath += tracker.getName();
+	        				
+	        				
+	        				
+	        				if(punter == true)
+	        				{
+	        					toReturn = teststr2;
+	        					punter = false;
+	        					localcount = 0;
+	        				}
+	        				
+	        				
+	        				for(int j = 0; j < AList.size(); j++)
+	            	    	{
+	            	    		if(AList.get(j).getFirst() == stack.peek())
+	            	    		{
+	            	    			arrIndex = AList.indexOf(AList.get(j)); 
+	            	    			break;
+	            	    		}
+	            	    	}
+	        				poppedFlag = true;
+	        				AList.get(arrIndex).remove(tracker); 
+	            			iterator = AList.get(arrIndex).listIterator(1); 
+	            			
+	        			}
+	        		}
+	        	}
+	    		//if we are at a node that no longer points to anything, pop it!
+	    		//search through the adjacency list to see if that linked list is empty.
+	    		NetworkNode boo = stack.peek();
+	    		boolean booFlag = false;
+	    		for(int k = 0; k < AList.size(); k++)
+	    		{
+	    			if(boo == AList.get(k).getFirst())
+	    			{
+		    			if(AList.get(k).get(1) == null)
+		    			{
+		    				if(poppedFlag == true)
+		    				{
+		    					booFlag = true;
+		    				}
+		    			}
+	    			}
+	    		}
+	    		
+	    		
+	    		if((booFlag == true))
+	    		{
+		    		//tally count
+					tracker = stack.pop();					//when we pop off the stack, we should remove it's apearance (1 level only?) "upstream" of where it was.
+					count += tracker.getDuration();
+					nodesInPath += tracker.getName();
+					for(int j = 0; j < AList.size(); j++)
+	    	    	{
+						if(stack.empty())
+						{
+							break;
+						}
+	    	    		if(AList.get(j).getFirst() == stack.peek())
+	    	    		{
+	    	    			arrIndex = AList.indexOf(AList.get(j));
+	    	    			break;
+	    	    		}
+	    	    	}
+					AList.get(arrIndex).remove(tracker);
+	    			iterator = AList.get(arrIndex).listIterator(1);
+	    		}
+	    		
+	    		
+	    	}
+    	}
+    	
+
+            count = 0;
+    	
+    	
+    	return toReturn;
+    }
+    
     
 }
 
