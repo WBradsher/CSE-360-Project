@@ -222,12 +222,81 @@ public class NetworkList extends JFrame implements ActionListener
         }
         if(e.getSource() == help) 
         {
-            
+        	textArea.setText("HELP:\n\nENTERING INPUTS:\n"
+        			+ "    -Activity name: Must be a string made of multiple characters\n"
+        			+ "    -Duration: must be entered as an integer\n    "
+        			+ "-Dependencies: Should be a list of Nodes in your network\n"
+        			+ "           -make sure to enter the list of Nodes speparated\n"
+        			+ "            only by a comma (no spaces). Example: \"A,B,C,D\"\n"
+        			+ "           NOTE: Only leave this field blank for the starting node.\n    "
+        			+ "\nADDING A NODE:\n"
+        			+ "    -Once all input fields are entered click \"add to network\" to add \n"
+        			+ "      the node to your network\n\n"
+        			+ "BUILD YOUR DIAGRAM:\n"
+        			+ "     -Once all nodes are added to the network\n"
+        			+ "       click '*process*' to build your diagram\n\n"
+        			+ "ERRORS:\n--- \"Data format(s) incorrect. "
+        			+ "Ensure that\":\n"
+        			+ "    1)    Name is a string.\n"
+        			+ "    2)    Duration is an integer.\n"
+        			+ "    3)    Dependencies are lists of Nodes, "
+        			+ "separated only by \n"
+        			+ "            a comma (no spaces). Example: \"A,B,C,D\"\n\n"
+        			+ "--- \"Node not added\":\n"
+        			+ "    -Each node must have a "
+        			+ "different name\n"
+        			+ "     -If you wish to change node propertires, please restart\n\n"
+        			+ "--- \"A starting node already entered\":"
+        			+ "\n    -There can only be one start node for each network\n"
+        			+ "    -Please enter dependies for the node\n    -If you wish to change "
+        			+ "node propertires, please restart\n\n"
+        			+ "--- \"Node must have name\": each node must have a name, \n"
+        			+ "     please check and make sure the Name field is not left blank"
+        			+ "\n\n\n\n For more information please view the User Manual");
+        	
+        	
+            ActivityNameF.setText("");
+        	DependenciesF.setText("");
+        	DurationF.setText("");
+            Display.invalidate();						//very important!!!! 
+            Display.validate();
+            Display.repaint();
 
         }
         if(e.getSource() == about)
         {
-            
+        	textArea.setText("ABOUT:\r\n" + 
+        			"\r\n" + 
+        			"SOFTWARE VERSION: 1.0.0\r\n" + 
+        			"\r\n" + 
+        			"AUTHORS:\r\n" + 
+        			"Wyatt Bradsher\r\n" + 
+        			"Ryan Burdett\r\n" + 
+        			"Orlando Cota Ceballos\r\n" + 
+        			"Andrew Hampton\r\n" + 
+        			"\r\n" + 
+        			"DOWLOAD LINK:\r\n" + 
+        			"https://github.com/Rburdett4/CSE-360-Project.git\r\n" + 
+        			"\r\n" + 
+        			"\r\n" + 
+        			"\r\n" + 
+        			"------------------WEDT2 General Public License------------------\r\n" + 
+        			"This program is free software; you can redistribute it and/or\r\n" + 
+        			"modify it under the terms of the WEDT2 General Public License\r\n" + 
+        			"as published by the Free Software Foundation; either version 2\r\n" + 
+        			"of the License, or (at your option) any later version.\r\n" + 
+        			"\r\n" + 
+        			"This program is distributed in the hope that it will be useful, but\r\n" + 
+        			"WITHOUT ANY WARRANTY; without even the implied warranty\r\n" + 
+        			"of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
+        	
+        	
+            ActivityNameF.setText("");
+        	DependenciesF.setText(""); 
+        	DurationF.setText("");
+            Display.invalidate();						//very important!!!! 
+            Display.validate();
+            Display.repaint();
 
         }
         if(e.getSource() == quit)

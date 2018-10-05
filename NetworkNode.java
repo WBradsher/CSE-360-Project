@@ -23,19 +23,4 @@ public class NetworkNode
 	{
 		return Dependencies;
 	}
-	/*public boolean CreatesCycle()		//returns true if it cycles, false if we're okay.
-    {
-		int count = 0;
-		StringTokenizer multiTokenizer = new StringTokenizer(Dependencies, ",");
-        while (multiTokenizer.hasMoreTokens())
-        {
-        	String advance = multiTokenizer.nextToken();
-        	count ++;
-        }
-    	if(count >= 2)
-    	{
-    		return true;
-    	} 
-    	return false;
-    }*/
 }
