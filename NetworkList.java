@@ -35,8 +35,8 @@ public class NetworkList extends JFrame implements ActionListener
     boolean punter;
     int localcount = 0;
     String teststr2 = "";   
-    
-    
+    ArrayList<Integer> intForDescent = new ArrayList<Integer>(); 
+    ArrayList<String> strForDescent = new ArrayList<String>();
     
     
     
@@ -175,7 +175,7 @@ public class NetworkList extends JFrame implements ActionListener
                 	else if(alreadyInNetworkwithData == true)
                 	{
                 		textArea.setText("Node not added.\n\nYou've already added this node.\nIf you'd like to change node properties, you must restart.");
-                		Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
+                		Display.getContentPane().add(scrollPane, BorderLayout.CENTER); 
                 	}
                 	else
                 	{
@@ -257,6 +257,8 @@ public class NetworkList extends JFrame implements ActionListener
         	{
         		AdjacencyList.get(p).clear();
         	}
+        	intForDescent.clear();
+        	strForDescent.clear();
         	teststr2 = "";
         	AdjacencyList.clear();
         	ActivityNameF.setText("");
@@ -295,11 +297,31 @@ public class NetworkList extends JFrame implements ActionListener
             	
 	            String test = printPaths(AdjacencyList, startNode);
 	            test = "All Paths in the Network:\n\n" + test;
-	            textArea.setText("" + test); 
-	            Display.getContentPane().add(scrollPane, BorderLayout.CENTER); 
+	            textArea.setText("" + test + "\n\n\tProgram finsished. All nodes cleared!"); 
+	            Display.getContentPane().add(scrollPane, BorderLayout.CENTER);   
+	            
+	          //------------------
+	        	//now let's wipe all input and let the user know they can/must restart. 
+	        	//this section should wipe all data from the program.clear the arraylist, etc.
+	        	startNode = null;
+	        	startingNode = false;
+	        	for(int p = 0; p < AdjacencyList.size(); p++) 
+	        	{
+	        		AdjacencyList.get(p).clear();
+	        	}
+	        	intForDescent.clear();
+	        	strForDescent.clear();
+	        	teststr2 = "";
+	        	AdjacencyList.clear();
+	        	ActivityNameF.setText("");
+	        	DependenciesF.setText("");
+	        	DurationF.setText("");
+	        	
+	        	
+	            //------------------
             }
             
-            
+        	
             
             ActivityNameF.setText(""); 
         	DependenciesF.setText("");
@@ -401,9 +423,9 @@ public class NetworkList extends JFrame implements ActionListener
     public String printPaths(ArrayList<LinkedList<NetworkNode>> AList, NetworkNode starter)				//CAN'T FORGET TO CLEAR ALL DATA AT VERY END
     {
     	String toReturn = "";  
-    	NetworkNode tracker = null;   
-    	boolean pushedFlag = false;   
-    	boolean poppedFlag = false;  
+    	NetworkNode tracker = null;    
+    	boolean pushedFlag = false;    
+    	boolean poppedFlag = false;   
     	int count = 0;  
     	String nodesInPath = "";
     	for(int i = 0; i < AList.size(); i++) 
@@ -412,7 +434,7 @@ public class NetworkList extends JFrame implements ActionListener
     	}
     	
     	//let's find our END node
-    	for(int i = 0; i < AList.size(); i++) 
+    	for(int i = 0; i < AList.size(); i++)  
     	{
     		if(AList.get(i).get(1) == null)  
     		{
@@ -421,7 +443,7 @@ public class NetworkList extends JFrame implements ActionListener
     	}
     	
     	//okay, now let's make a stack for a DFS
-    	Stack<NetworkNode> stack = new Stack<NetworkNode>(); 
+    	Stack<NetworkNode> stack = new Stack<NetworkNode>();  
     	stack.push(starter);
     	
     	while(!stack.empty())
@@ -434,7 +456,7 @@ public class NetworkList extends JFrame implements ActionListener
 	    	
 	    	for(int i = 0; i < AList.size(); i++)
 	    	{
-	    		if(AList.get(i).getFirst() == current)
+	    		if(AList.get(i).getFirst() == current) 
 	    		{
 	    			arrIndex = AList.indexOf(AList.get(i)); 
 	    			break;
@@ -442,7 +464,24 @@ public class NetworkList extends JFrame implements ActionListener
 	    	}
 	    	if(AList.get(arrIndex).get(1) == null) 
 	    	{
-	    		break;
+	    		//break;
+	    		if(AList.get(arrIndex).getFirst() == startNode) 
+	    		{
+	    			break;
+	    		}
+	    		else
+	    		{
+	    			stack.pop();
+	    			for(int k = 0; k < AList.size(); k++)
+	    			{
+	    				if(AList.get(k).getFirst() == stack.peek())
+	    				{
+	    					arrIndex = AList.indexOf(AList.get(k));
+	    				}
+	    			} 
+	    			//arrIndex = AList.indexOf(stack.peek());  //This is wrong. It needs to be the index of a linked list starting with stack.peek(), not stack.peek() itself.
+	    			
+	    		}
 	    	}
 	    	ListIterator<NetworkNode> iterator = AList.get(arrIndex).listIterator(1);
 	    	while(iterator.hasNext())
@@ -484,7 +523,9 @@ public class NetworkList extends JFrame implements ActionListener
 		        				   punter = true; 
 		        				   
 		        				}
-		        				teststr2 += teststr + ": " + localcount;
+		        				strForDescent.add(teststr);
+		        				intForDescent.add(localcount);
+		        				teststr2 += teststr + ": " + localcount; 
 		        				teststr2 += "\n"; 
 		        				stack.pop();
 	        				}
@@ -510,7 +551,7 @@ public class NetworkList extends JFrame implements ActionListener
 	            	    		if(AList.get(j).getFirst() == stack.peek())
 	            	    		{
 	            	    			arrIndex = AList.indexOf(AList.get(j)); 
-	            	    			break;
+	            	    			break; 
 	            	    		}
 	            	    	}
 	        				poppedFlag = true;
@@ -567,8 +608,35 @@ public class NetworkList extends JFrame implements ActionListener
     	
 
             count = 0;
-    	
-    	
+    	//we should sort our results in descending order!
+        int inthelper;
+        String strhelper;
+        boolean sorted = false;
+        while(!sorted)
+        {
+        	sorted = true;
+        	for (int i = 0 ; i < intForDescent.size()-1 ; i ++ )
+        	{
+        		if(intForDescent.get(i) < intForDescent.get(i+1)) 
+        		{
+        			//symmetrically swap both arrays
+        			inthelper = intForDescent.get(i);
+        			intForDescent.set(i, intForDescent.get(i+1));
+        			intForDescent.set(i+1, inthelper); 
+        			
+        			strhelper = strForDescent.get(i);
+        			strForDescent.set(i, strForDescent.get(i+1)); 
+        			strForDescent.set(i+1, strhelper);   
+        			
+        			sorted = false; 
+        		}
+        	}
+        }
+    	toReturn = "";
+    	for(int i = 0; i < intForDescent.size(); i++)
+    	{
+    		toReturn += strForDescent.get(i) + ": " + intForDescent.get(i).toString() + "\n";
+    	}
     	return toReturn; 
     }
     
