@@ -23,4 +23,12 @@ public class NetworkNode
 	{
 		return Dependencies;
 	}
+	public void setDuration(int dur1)
+	{
+		Duration = dur1;
+	}
+	public void setDependencies(String depend1)
+	{
+		Dependencies = depend1; 
+	}
 }

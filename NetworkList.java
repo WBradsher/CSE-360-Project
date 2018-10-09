@@ -17,7 +17,7 @@ public class NetworkList extends JFrame implements ActionListener
     JTextField DurationF = new JTextField(10);
     JTextField DependenciesF = new JTextField(10);
     JTextField ActivityNameF = new JTextField(10);
-    JButton Add= new JButton("Add to Network"); 
+    JButton Add= new JButton("Add to Network");  
     JButton restart = new JButton("Restart");
     JButton process = new JButton("*Process*");
     JButton help = new JButton("Help");
@@ -34,7 +34,7 @@ public class NetworkList extends JFrame implements ActionListener
     String teststr = "";
     boolean punter;
     int localcount = 0;
-    String teststr2 = "";  
+    String teststr2 = "";   
     
     
     
@@ -71,10 +71,11 @@ public class NetworkList extends JFrame implements ActionListener
         process.addActionListener(this);
         help.addActionListener(this);
         about.addActionListener(this);
+        quit.addActionListener(this);
         add(aLabel);
-        add(ActivityNameF); 
+        add(ActivityNameF);  
         add(blabel);
-        add(DurationF);
+        add(DurationF);  
         add(clabel); 
         add(DependenciesF); 
         add(dlabel);
@@ -86,20 +87,20 @@ public class NetworkList extends JFrame implements ActionListener
         add(quit);
     }
 
-    public void actionPerformed(ActionEvent e)
-    {
-        if(e.getSource() == Add) 
+    public void actionPerformed(ActionEvent e) 
+    { 
+        if(e.getSource() == Add)    
         {
-            try
+            try   
             {
-            	String name = ActivityNameF.getText();
+            	String name = ActivityNameF.getText(); 
             	int dur = Integer.parseInt(DurationF.getText());
             	String depend = DependenciesF.getText();						//create new node
                 NetworkNode temp = new NetworkNode(name, dur, depend);
                 if(name.equals(""))
                 {
                 	textArea.setText("Node must have a name!\n\nThis node was NOT added."); 
-                	Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
+                	Display.getContentPane().add(scrollPane, BorderLayout.CENTER); 
                 }
                 else if(startingNode == true && (depend.equals("")))
                 {
@@ -108,17 +109,70 @@ public class NetworkList extends JFrame implements ActionListener
                 }
                 else
                 {
-                	boolean alreadyInNetwork = false;
-                	for(int i = 0; i < AdjacencyList.size(); i++)
+                	
+                	
+                	boolean alreadyInNetworkwithData = false;
+                	boolean hasNoData = false; 
+                	String checker = ""; 
+                	int location = -1;
+                	for(int i = 0; i < AdjacencyList.size(); i++) 
                 	{
-                		String checker = AdjacencyList.get(i).getFirst().getName();
-                		if(checker.equals(temp.getName()))
+                		checker = AdjacencyList.get(i).getFirst().getName(); 
+                		int doofus = AdjacencyList.get(i).getFirst().getDuration();
+                		if(checker.equals(temp.getName()) && doofus != -1)								
                 		{
-                			alreadyInNetwork = true; 
-                			break;
+                			alreadyInNetworkwithData = true; 
+                			//break;
+                		}
+                		if(checker.equals(temp.getName()) && doofus == -1)
+                		{
+                			hasNoData = true;
+                			location = i;													//BREAK?
                 		}
                 	}
-                	if(alreadyInNetwork == true)
+                	if(hasNoData == true) 
+                	{
+                		AdjacencyList.get(location).getFirst().setDuration(temp.getDuration()); 
+                		AdjacencyList.get(location).getFirst().setDependencies(temp.getDependencies());
+                		depend = AdjacencyList.get(location).getFirst().getDependencies();
+                		if(depend.equals(""))
+    	                {
+    	                	startingNode = true;
+    	                	startNode = AdjacencyList.get(location).getFirst();//temp;    
+    	                }
+                		StringTokenizer multiTokenizer = new StringTokenizer(depend, ",");  
+                		boolean dependencyFound = false;
+                		while (multiTokenizer.hasMoreTokens())
+    	                {
+    	                	String token = multiTokenizer.nextToken();
+    	                	for(int i = 0; i < AdjacencyList.size(); i++)	 						//hunt through the Adjacency List
+    	                	{
+    	                		if(AdjacencyList.get(i).getFirst().getName().equals(token))	//if the dependency is in the list, add it.
+    	                		{
+    	                			AdjacencyList.get(i).add(AdjacencyList.get(location).getFirst());		//for some reason, this is a different reference. 
+    	                			dependencyFound = true; 
+    	                		} 
+    	                	}
+    	                	if(dependencyFound != true) 
+                    		{
+                    			//we should create a node in the adjacency list- it doesn't exist yet, so we'll have to do a couple of things:
+                    			//	DONE 1) Check towards the end of the list for nodes that don't have a duration. If it doesn't, then we know there is an error/missing node that someone forgot to put in.
+                    			//	DONE 2) When we add a node, we should check if it's name is already in the AdjacencyList. If it is (and if the pointers are correct?), then we can just update it.
+                    			//I think this should work, but we'll have to see with time and testing.
+                    			String Oname = token; 
+                    			int Odur = -1;
+                    			String Odepend = null;
+                    			NetworkNode orphan = new NetworkNode(Oname, Odur, Odepend);
+                    			LinkedList<NetworkNode> Otemp = new LinkedList<NetworkNode>();  
+                            	Otemp.add(orphan);
+                            	Otemp.add(AdjacencyList.get(location).getFirst()); 
+                            	AdjacencyList.add(Otemp);		//add to array 
+                    		}
+    	                }
+    	                textArea.setText("Node " + temp.getName() + " added successfully!");
+    	                Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
+                	}
+                	else if(alreadyInNetworkwithData == true)
                 	{
                 		textArea.setText("Node not added.\n\nYou've already added this node.\nIf you'd like to change node properties, you must restart.");
                 		Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
@@ -134,7 +188,8 @@ public class NetworkList extends JFrame implements ActionListener
     	                	startNode = temp; 
     	                }
     	                //now, we should parse out it's dependencies.
-    	                StringTokenizer multiTokenizer = new StringTokenizer(depend, ",");
+    	                StringTokenizer multiTokenizer = new StringTokenizer(depend, ","); 
+    	                boolean dependencyFound = false;
     	                while (multiTokenizer.hasMoreTokens())
     	                {
     	                	String token = multiTokenizer.nextToken();
@@ -142,12 +197,29 @@ public class NetworkList extends JFrame implements ActionListener
     	                	{
     	                		if(AdjacencyList.get(i).getFirst().getName().equals(token))	//if the dependency is in the list, add it.
     	                		{
-    	                			AdjacencyList.get(i).add(temp);
-    	                		} 
+    	                			AdjacencyList.get(i).add(temp);//(AdjacencyList.get(location).getFirst()); 
+    	                			dependencyFound = true;
+    	                		}
     	                	}
+    	                	if(dependencyFound != true) 
+                    		{
+                    			//we should create a node in the adjacency list- it doesn't exist yet, so we'll have to do a couple of things:
+                    			//	DONE 1) Check towards the end of the list for nodes that don't have a duration. If it doesn't, then we know there is an error/missing node that someone forgot to put in.
+                    			//	DONE 2) When we add a node, we should check if it's name is already in the AdjacencyList. If it is (and if the pointers are correct?), then we can just update it.
+                    			//I think this should work, but we'll have to see with time and testing.
+                    			String Oname = token;
+                    			int Odur = -1;
+                    			String Odepend = null;
+                    			NetworkNode orphan = new NetworkNode(Oname, Odur, Odepend);
+                    			LinkedList<NetworkNode> Otemp = new LinkedList<NetworkNode>();
+                            	Otemp.add(orphan);
+                            	Otemp.add(temp);													//THIS MIGHT HAVE TO BE AdjacencyList.get(location).getFirst() INSTEAD OF TEMP
+                            	AdjacencyList.add(Otemp);		//add to array 
+                    		}
     	                }
+    	                
     	                textArea.setText("Node " + temp.getName() + " added successfully!");
-    	                Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
+    	                Display.getContentPane().add(scrollPane, BorderLayout.CENTER); 
                 	}
                 }
                 
@@ -179,26 +251,42 @@ public class NetworkList extends JFrame implements ActionListener
         {
         	
         	//this section should wipe all data from the program.clear the arraylist, etc.
+        	startNode = null;
+        	startingNode = false;
+        	for(int p = 0; p < AdjacencyList.size(); p++) 
+        	{
+        		AdjacencyList.get(p).clear();
+        	}
+        	teststr2 = "";
+        	AdjacencyList.clear();
+        	ActivityNameF.setText("");
+        	DependenciesF.setText("");
+        	DurationF.setText("");
+        	textArea.setText("Program restarted. All nodes cleared!"); 
+        	Display.getContentPane().add(scrollPane, BorderLayout.CENTER);   
         	
-        	
-            /*quantityField.setText("");
-            totalPriceField.setText(""); 
-            taxPriceField.setText("");
-            endPriceField.setText("");
-            finalPriceField.setText("");
-            a = 0;
-            Display.dispose();
-            Display = new JFrame("My Display");			//old code, can be used as a baseline.
-            Display.setSize(300, 400);
-            Display.setLocation(850, 300);
-            Display.setLayout(DisplayFlow);
-            Display.setVisible(true);
-            Display.setResizable(false);
-            Display.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);*/
         }
         if(e.getSource() == process)
         {
-            if(AdjacencyList.size() < 2)
+        	
+        	///
+        	boolean checkfornulls = false;
+        	for(int i = 0; i < AdjacencyList.size(); i++)
+        	{
+        		int checker = AdjacencyList.get(i).getFirst().getDuration();
+        		if(checker == -1)
+        		{
+        			checkfornulls = true;
+        			break;
+        		}
+        	}
+        	///
+        	if(checkfornulls == true)
+        	{
+        		textArea.setText("Error adding nodes: You've likely forgotten to enter a node! \nAt some point, there was a node that was entered with a dependency, \nbut that dependency was never itself entered. \n\nThe current input has been saved, please finish or restart!");
+        		Display.getContentPane().add(scrollPane, BorderLayout.CENTER); 
+        	}
+        	else if(AdjacencyList.size() < 2)
             {
             	textArea.setText("Cannot process: Less than 2 Nodes Entered.\n\nThe input values are still in the system, please continue."); 					//check this. 2+ nodes needed for list?
             }             
@@ -208,7 +296,7 @@ public class NetworkList extends JFrame implements ActionListener
 	            String test = printPaths(AdjacencyList, startNode);
 	            test = "All Paths in the Network:\n\n" + test;
 	            textArea.setText("" + test); 
-	            Display.getContentPane().add(scrollPane, BorderLayout.CENTER);  
+	            Display.getContentPane().add(scrollPane, BorderLayout.CENTER); 
             }
             
             
@@ -313,10 +401,10 @@ public class NetworkList extends JFrame implements ActionListener
     public String printPaths(ArrayList<LinkedList<NetworkNode>> AList, NetworkNode starter)				//CAN'T FORGET TO CLEAR ALL DATA AT VERY END
     {
     	String toReturn = "";  
-    	NetworkNode tracker = null;  
-    	boolean pushedFlag = false;  
-    	boolean poppedFlag = false; 
-    	int count = 0;
+    	NetworkNode tracker = null;   
+    	boolean pushedFlag = false;   
+    	boolean poppedFlag = false;  
+    	int count = 0;  
     	String nodesInPath = "";
     	for(int i = 0; i < AList.size(); i++) 
     	{
@@ -324,7 +412,7 @@ public class NetworkList extends JFrame implements ActionListener
     	}
     	
     	//let's find our END node
-    	for(int i = 0; i < AList.size(); i++)
+    	for(int i = 0; i < AList.size(); i++) 
     	{
     		if(AList.get(i).get(1) == null)  
     		{
@@ -348,7 +436,7 @@ public class NetworkList extends JFrame implements ActionListener
 	    	{
 	    		if(AList.get(i).getFirst() == current)
 	    		{
-	    			arrIndex = AList.indexOf(AList.get(i));
+	    			arrIndex = AList.indexOf(AList.get(i)); 
 	    			break;
 	    		}
 	    	}
@@ -364,7 +452,7 @@ public class NetworkList extends JFrame implements ActionListener
 	    		NetworkNode a = iterator.next();
 	    		for(int i = 0; i < AList.size(); i++)
 	        	{
-	        		if(AList.get(i).getFirst() == a)
+	        		if(AList.get(i).getFirst() == a) 
 	        		{ 
 	        			if(AList.get(i).get(1) != null)
 	            		{
@@ -470,7 +558,7 @@ public class NetworkList extends JFrame implements ActionListener
 	    	    		}
 	    	    	}
 					AList.get(arrIndex).remove(tracker);
-	    			iterator = AList.get(arrIndex).listIterator(1);
+	    			iterator = AList.get(arrIndex).listIterator(1); 
 	    		}
 	    		
 	    		
@@ -481,7 +569,7 @@ public class NetworkList extends JFrame implements ActionListener
             count = 0;
     	
     	
-    	return toReturn;
+    	return toReturn; 
     }
     
     
