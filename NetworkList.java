@@ -47,11 +47,17 @@ public class NetworkList extends JFrame implements ActionListener
     int localcount = 0;
     String teststr2 = "";   
     ArrayList<Integer> intForDescent = new ArrayList<Integer>(); 
-    ArrayList<String> strForDescent = new ArrayList<String>();
+    ArrayList<String> strForDescent = new ArrayList<String>(); 
     ArrayList<Integer> intForFile = new ArrayList<Integer>(); 
     ArrayList<String> strForFile = new ArrayList<String>();
     boolean processed = false;
     String toReturn = "";
+    ArrayList<LinkedList<NetworkNode>> DuplicateAdjacencyList = new ArrayList<LinkedList<NetworkNode>>(); 
+    ArrayList<LinkedList<NetworkNode>> DuplicateAdjacencyList2 = new ArrayList<LinkedList<NetworkNode>>(); 
+    boolean copied = false;
+    int counter = 0;
+    
+    
     
     
     public static void main(String[] arguments)
@@ -103,13 +109,13 @@ public class NetworkList extends JFrame implements ActionListener
         add(quit);
     }
 
-    public void actionPerformed(ActionEvent e) 
+    public void actionPerformed(ActionEvent e)
     { 
         if(e.getSource() == Add)    
         {
-            try   
+            try    
             {
-            	String name = ActivityNameF.getText(); 
+            	String name = ActivityNameF.getText();  
             	int dur = Integer.parseInt(DurationF.getText());
             	String depend = DependenciesF.getText();						//create new node
                 NetworkNode temp = new NetworkNode(name, dur, depend);
@@ -131,6 +137,7 @@ public class NetworkList extends JFrame implements ActionListener
                 	boolean hasNoData = false; 
                 	String checker = ""; 
                 	int location = -1;
+                	int durationlocation = 0;
                 	for(int i = 0; i < AdjacencyList.size(); i++) 
                 	{
                 		checker = AdjacencyList.get(i).getFirst().getName(); 
@@ -138,6 +145,7 @@ public class NetworkList extends JFrame implements ActionListener
                 		if(checker.equals(temp.getName()) && doofus != -1)								
                 		{
                 			alreadyInNetworkwithData = true; 
+                			durationlocation = i;
                 			//break;
                 		}
                 		if(checker.equals(temp.getName()) && doofus == -1)
@@ -190,7 +198,17 @@ public class NetworkList extends JFrame implements ActionListener
                 	}
                 	else if(alreadyInNetworkwithData == true)
                 	{
-                		textArea.setText("Node not added.\n\nYou've already added this node.\nIf you'd like to change node properties, you must restart.");
+                		if(counter % 2 == 0)
+                		{
+                			DuplicateAdjacencyList.get(durationlocation).getFirst().setDuration(dur);
+                		}
+                		else
+                		{
+                			DuplicateAdjacencyList2.get(durationlocation).getFirst().setDuration(dur);
+                		}
+                		
+                		
+                		textArea.setText("Node duration changed successfully!"); 
                 		Display.getContentPane().add(scrollPane, BorderLayout.CENTER); 
                 	}
                 	else
@@ -266,11 +284,13 @@ public class NetworkList extends JFrame implements ActionListener
         if(e.getSource() == restart)
         {
         	
-        	//this section should wipe all data from the program.clear the arraylist, etc.
+        	//this section should wipe all data from the program.clear the arraylist, etc. 
         	startNode = null;
         	startingNode = false;
         	processed = false;
+        	copied = false;
         	toReturn = "";
+        	counter = 0;
         	for(int p = 0; p < AdjacencyList.size(); p++) 
         	{
         		AdjacencyList.get(p).clear();
@@ -280,7 +300,7 @@ public class NetworkList extends JFrame implements ActionListener
         	teststr2 = "";
         	AdjacencyList.clear();
         	ActivityNameF.setText("");
-        	DependenciesF.setText("");
+        	DependenciesF.setText(""); 
         	DurationF.setText("");
         	textArea.setText("Program restarted. All nodes cleared!"); 
         	Display.getContentPane().add(scrollPane, BorderLayout.CENTER);   
@@ -288,7 +308,33 @@ public class NetworkList extends JFrame implements ActionListener
         }
         if(e.getSource() == process)
         {
-        	processed = true;
+        	if(copied == false)
+        	{
+        		for(LinkedList<NetworkNode> j : AdjacencyList)									//**********FIX*****************
+    			{
+    				DuplicateAdjacencyList.add((LinkedList<NetworkNode>) j.clone()); 
+    			}
+        		copied = true; 
+        	}
+        	else
+        	{
+	        	if(counter % 2 == 0)
+	        	{
+	    			for(LinkedList<NetworkNode> j : DuplicateAdjacencyList)  									//**********FIX*****************
+	    			{
+	    				DuplicateAdjacencyList2.add((LinkedList<NetworkNode>) j.clone()); 
+	    			}
+	    			counter++;
+	        	}
+	        	else
+	        	{
+	        		for(LinkedList<NetworkNode> j : DuplicateAdjacencyList2)									//**********FIX*****************
+	    			{
+	    				DuplicateAdjacencyList.add((LinkedList<NetworkNode>) j.clone());  
+	    			}
+	    			counter++;
+	        	}
+        	}
         	///
         	boolean checkfornulls = false;
         	for(int i = 0; i < AdjacencyList.size(); i++)
@@ -312,12 +358,30 @@ public class NetworkList extends JFrame implements ActionListener
             }             
             else
             {
-            	
-	            String test = printPaths(AdjacencyList, startNode);
-	            test = "All Paths in the Network:\n\n" + test;
-	            textArea.setText("" + test + "\n\n\tProgram finsished. If you'd like to \n\tchange a node's duration and re-process, \n\tplease re-enter the node \n\tto the left. \n\tYou can also write to a file at this time!"); 
-	            Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
-	            
+            	if(processed == false)
+            	{
+		            String test = printPaths(AdjacencyList, startNode);
+		            test = "All Paths in the Network:\n\n" + test;
+		            textArea.setText("" + test + "\n\n\tProgram finsished. If you'd like to \n\tchange a node's duration and re-process, \n\tplease re-enter the node \n\tto the left. \n\tYou can also write to a file at this time!"); 
+		            Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
+            	}
+            	else
+            	{
+            		if(counter % 2 != 0)  
+            		{
+	            		String test = printPaths(DuplicateAdjacencyList, startNode);
+			            test = "All Paths in the Network:\n\n" + test;
+			            textArea.setText("" + test + "\n\n\tProgram finsished. If you'd like to \n\tchange a node's duration and re-process, \n\tplease re-enter the node \n\tto the left. \n\tYou can also write to a file at this time!"); 
+			            Display.getContentPane().add(scrollPane, BorderLayout.CENTER); 
+            		}
+            		else
+            		{
+            			String test = printPaths(DuplicateAdjacencyList2, startNode);
+			            test = "All Paths in the Network:\n\n" + test;
+			            textArea.setText("" + test + "\n\n\tProgram finsished. If you'd like to \n\tchange a node's duration and re-process, \n\tplease re-enter the node \n\tto the left. \n\tYou can also write to a file at this time!"); 
+			            Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
+            		}
+            	}
 	          /*------------------
 	        	//now let's wipe all input and let the user know they can/must restart. 
 	        	//this section should wipe all data from the program.clear the arraylist, etc.
@@ -337,10 +401,22 @@ public class NetworkList extends JFrame implements ActionListener
 	        	
 	        	
 	            //------------------*/ 
+            	intForDescent.clear();
+	        	strForDescent.clear();
             }
-            
+        	if(counter % 2 == 0)
+        	{
+    			
+    			DuplicateAdjacencyList2.clear(); 
+    			
+        	}
+        	else
+        	{
+        		DuplicateAdjacencyList.clear();
+        	}
         	
-            
+        	
+        	processed = true;
             ActivityNameF.setText(""); 
         	DependenciesF.setText("");
         	DurationF.setText("");
@@ -526,7 +602,7 @@ public class NetworkList extends JFrame implements ActionListener
     		AList.get(i).add(null);							//the LinkedList class is weird. had to append a null onto each linked list.
     	}
     	
-    	//let's find our END node
+    	//let's find our END node 
     	for(int i = 0; i < AList.size(); i++)  
     	{
     		if(AList.get(i).get(1) == null)  
@@ -598,7 +674,7 @@ public class NetworkList extends JFrame implements ActionListener
 	            	    	{
 	            	    		if(AList.get(j).getFirst() == stack.peek())
 	            	    		{
-	            	    			arrIndex = AList.indexOf(AList.get(j));
+	            	    			arrIndex = AList.indexOf(AList.get(j)); 
 	            	    			break;
 	            	    		}
 	            	    	}
@@ -608,7 +684,7 @@ public class NetworkList extends JFrame implements ActionListener
 	        			else
 	        			{
 	        				stack.push(AList.get(i).getFirst());
-	        				Iterator<NetworkNode> stackIterator = stack.iterator();
+	        				Iterator<NetworkNode> stackIterator = stack.iterator(); 
 	        				Iterator<NetworkNode> stackIterator2 = stack.iterator();
 	        				if(stack.peek() == endNode)
 	        				{
@@ -723,19 +799,19 @@ public class NetworkList extends JFrame implements ActionListener
         			intForDescent.set(i+1, inthelper); 
         			
         			strhelper = strForDescent.get(i);
-        			strForDescent.set(i, strForDescent.get(i+1)); 
-        			strForDescent.set(i+1, strhelper);   
+        			strForDescent.set(i, strForDescent.get(i+1));
+        			strForDescent.set(i+1, strhelper);    
         			
         			sorted = false; 
         		}
         	}
         }
     	toReturn = "";
-    	for(int i = 0; i < intForDescent.size(); i++)
+    	for(int i = 0; i < intForDescent.size(); i++) 
     	{
     		toReturn += strForDescent.get(i) + ": " + intForDescent.get(i).toString() + "\n";
     	}
-    	return toReturn; 
+    	return toReturn;
     }
     
     
