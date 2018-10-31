@@ -12,6 +12,7 @@ public class NetworkList extends JFrame implements ActionListener
     static int HEIGHT = 450;
     JFrame Display = new JFrame("Network List");
     JFrame FileWindow = new JFrame("Create File"); 
+    JFrame ProcessWindow = new JFrame("Process Options");
     FlowLayout flow = new FlowLayout();
     FlowLayout DisplayFlow = new FlowLayout();
     JLabel DisplayList = new JLabel();
@@ -52,12 +53,14 @@ public class NetworkList extends JFrame implements ActionListener
     ArrayList<String> strForFile = new ArrayList<String>();
     boolean processed = false;
     String toReturn = "";
+    String criticalToReturn = "";
     ArrayList<LinkedList<NetworkNode>> DuplicateAdjacencyList = new ArrayList<LinkedList<NetworkNode>>(); 
     ArrayList<LinkedList<NetworkNode>> DuplicateAdjacencyList2 = new ArrayList<LinkedList<NetworkNode>>(); 
     boolean copied = false;
     int counter = 0;
-    
-    
+    JButton ProcessNormally = new JButton("Process All Nodes");
+    JButton ProcessCritical = new JButton("Process Critical Path"); 
+    boolean criticalonly = false;
     
     
     public static void main(String[] arguments)
@@ -290,7 +293,9 @@ public class NetworkList extends JFrame implements ActionListener
         	processed = false;
         	copied = false;
         	toReturn = "";
+        	criticalToReturn = ""; 
         	counter = 0;
+        	criticalonly = false;
         	for(int p = 0; p < AdjacencyList.size(); p++) 
         	{
         		AdjacencyList.get(p).clear();
@@ -308,121 +313,26 @@ public class NetworkList extends JFrame implements ActionListener
         }
         if(e.getSource() == process)
         {
-        	if(copied == false)
-        	{
-        		for(LinkedList<NetworkNode> j : AdjacencyList)									//**********FIX*****************
-    			{
-    				DuplicateAdjacencyList.add((LinkedList<NetworkNode>) j.clone()); 
-    			}
-        		copied = true; 
-        	}
-        	else
-        	{
-	        	if(counter % 2 == 0)
-	        	{
-	    			for(LinkedList<NetworkNode> j : DuplicateAdjacencyList)  									//**********FIX*****************
-	    			{
-	    				DuplicateAdjacencyList2.add((LinkedList<NetworkNode>) j.clone()); 
-	    			}
-	    			counter++;
-	        	}
-	        	else
-	        	{
-	        		for(LinkedList<NetworkNode> j : DuplicateAdjacencyList2)									//**********FIX*****************
-	    			{
-	    				DuplicateAdjacencyList.add((LinkedList<NetworkNode>) j.clone());  
-	    			}
-	    			counter++;
-	        	}
-        	}
-        	///
-        	boolean checkfornulls = false;
-        	for(int i = 0; i < AdjacencyList.size(); i++)
-        	{
-        		int checker = AdjacencyList.get(i).getFirst().getDuration();
-        		if(checker == -1)
-        		{
-        			checkfornulls = true;
-        			break;
-        		}
-        	}
-        	///
-        	if(checkfornulls == true)
-        	{
-        		textArea.setText("Error adding nodes: You've likely forgotten to enter a node! \nAt some point, there was a node that was entered with a dependency, \nbut that dependency was never itself entered. \n\nThe current input has been saved, please finish or restart!");
-        		Display.getContentPane().add(scrollPane, BorderLayout.CENTER); 
-        	}
-        	else if(AdjacencyList.size() < 2)
-            {
-            	textArea.setText("Cannot process: Less than 2 Nodes Entered.\n\nThe input values are still in the system, please continue."); 					//check this. 2+ nodes needed for list?
-            }             
-            else
-            {
-            	if(processed == false)
-            	{
-		            String test = printPaths(AdjacencyList, startNode);
-		            test = "All Paths in the Network:\n\n" + test;
-		            textArea.setText("" + test + "\n\n\tProgram finsished. If you'd like to \n\tchange a node's duration and re-process, \n\tplease re-enter the node \n\tto the left. \n\tYou can also write to a file at this time!"); 
-		            Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
-            	}
-            	else
-            	{
-            		if(counter % 2 != 0)  
-            		{
-	            		String test = printPaths(DuplicateAdjacencyList, startNode);
-			            test = "All Paths in the Network:\n\n" + test;
-			            textArea.setText("" + test + "\n\n\tProgram finsished. If you'd like to \n\tchange a node's duration and re-process, \n\tplease re-enter the node \n\tto the left. \n\tYou can also write to a file at this time!"); 
-			            Display.getContentPane().add(scrollPane, BorderLayout.CENTER); 
-            		}
-            		else
-            		{
-            			String test = printPaths(DuplicateAdjacencyList2, startNode);
-			            test = "All Paths in the Network:\n\n" + test;
-			            textArea.setText("" + test + "\n\n\tProgram finsished. If you'd like to \n\tchange a node's duration and re-process, \n\tplease re-enter the node \n\tto the left. \n\tYou can also write to a file at this time!"); 
-			            Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
-            		}
-            	}
-	          /*------------------
-	        	//now let's wipe all input and let the user know they can/must restart. 
-	        	//this section should wipe all data from the program.clear the arraylist, etc.
-	        	startNode = null;
-	        	startingNode = false;
-	        	for(int p = 0; p < AdjacencyList.size(); p++) 
-	        	{
-	        		AdjacencyList.get(p).clear();									//commented out for phase 2- we should be able to change the duration after processing. 
-	        	}
-	        	intForDescent.clear();
-	        	strForDescent.clear();
-	        	teststr2 = "";
-	        	AdjacencyList.clear();
-	        	ActivityNameF.setText("");
-	        	DependenciesF.setText("");
-	        	DurationF.setText("");
-	        	
-	        	
-	            //------------------*/ 
-            	intForDescent.clear();
-	        	strForDescent.clear();
-            }
-        	if(counter % 2 == 0)
-        	{
-    			
-    			DuplicateAdjacencyList2.clear(); 
-    			
-        	}
-        	else
-        	{
-        		DuplicateAdjacencyList.clear();
-        	}
+        	//--------------------------------------
+        	//let's build our new window 
+        	ProcessWindow.setSize(250, 150);
+        	ProcessWindow.setLocation(800, 320); 
+        	ProcessWindow.setLayout(DisplayFlow);
+        	ProcessWindow.setVisible(true);
+        	//FileWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
+        	//FileWindow.getContentPane().add(scrollPane, BorderLayout.CENTER);
+        	
+        	ProcessNormally.addActionListener(this);
+        	ProcessCritical.addActionListener(this);
+        	
+        	ProcessWindow.add(ProcessNormally);
+        	ProcessWindow.add(ProcessCritical);
         	
         	
-        	processed = true;
-            ActivityNameF.setText(""); 
-        	DependenciesF.setText("");
-        	DurationF.setText("");
-            Display.invalidate();						//very important!!!! 
-            Display.validate();
-            Display.repaint();
+        	//--------------------------------------
+        	
+        	
+        	
         }
         if(e.getSource() == help) 
         {
@@ -587,6 +497,253 @@ public class NetworkList extends JFrame implements ActionListener
         		Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
         	}
     	}
+        if(e.getSource() == ProcessNormally)
+        {
+        	//from here, we should execute this if "process normally" is activated.
+        	if(copied == false)
+        	{
+        		for(LinkedList<NetworkNode> j : AdjacencyList)									//**********FIX*****************
+    			{
+    				DuplicateAdjacencyList.add((LinkedList<NetworkNode>) j.clone()); 
+    			}
+        		copied = true; 
+        	}
+        	else
+        	{
+	        	if(counter % 2 == 0)
+	        	{
+	    			for(LinkedList<NetworkNode> j : DuplicateAdjacencyList)  									//**********FIX*****************
+	    			{
+	    				DuplicateAdjacencyList2.add((LinkedList<NetworkNode>) j.clone()); 
+	    			}
+	    			counter++;
+	        	}
+	        	else
+	        	{
+	        		for(LinkedList<NetworkNode> j : DuplicateAdjacencyList2)									//**********FIX*****************
+	    			{
+	    				DuplicateAdjacencyList.add((LinkedList<NetworkNode>) j.clone());  
+	    			}
+	    			counter++;
+	        	}
+        	}
+        	///
+        	boolean checkfornulls = false;
+        	for(int i = 0; i < AdjacencyList.size(); i++)
+        	{
+        		int checker = AdjacencyList.get(i).getFirst().getDuration();
+        		if(checker == -1)
+        		{
+        			checkfornulls = true;
+        			break;
+        		}
+        	}
+        	///
+        	if(checkfornulls == true)
+        	{
+        		textArea.setText("Error adding nodes: You've likely forgotten to enter a node! \nAt some point, there was a node that was entered with a dependency, \nbut that dependency was never itself entered. \n\nThe current input has been saved, please finish or restart!");
+        		Display.getContentPane().add(scrollPane, BorderLayout.CENTER); 
+        	}
+        	else if(AdjacencyList.size() < 2)
+            {
+            	textArea.setText("Cannot process: Less than 2 Nodes Entered.\n\nThe input values are still in the system, please continue."); 					//check this. 2+ nodes needed for list?
+            }             
+            else
+            {
+            	if(processed == false)
+            	{
+		            String test = printPaths(AdjacencyList, startNode);
+		            test = "All Paths in the Network:\n\n" + test;
+		            textArea.setText("" + test + "\n\n\tProgram finsished. If you'd like to \n\tchange a node's duration and re-process, \n\tplease re-enter the node \n\tto the left. \n\tYou can also write to a file at this time!"); 
+		            Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
+            	}
+            	else
+            	{
+            		if(counter % 2 != 0)  
+            		{
+	            		String test = printPaths(DuplicateAdjacencyList, startNode);
+			            test = "All Paths in the Network:\n\n" + test;
+			            textArea.setText("" + test + "\n\n\tProgram finsished. If you'd like to \n\tchange a node's duration and re-process, \n\tplease re-enter the node \n\tto the left. \n\tYou can also write to a file at this time!"); 
+			            Display.getContentPane().add(scrollPane, BorderLayout.CENTER); 
+            		}
+            		else
+            		{
+            			String test = printPaths(DuplicateAdjacencyList2, startNode);
+			            test = "All Paths in the Network:\n\n" + test;
+			            textArea.setText("" + test + "\n\n\tProgram finsished. If you'd like to \n\tchange a node's duration and re-process, \n\tplease re-enter the node \n\tto the left. \n\tYou can also write to a file at this time!"); 
+			            Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
+            		}
+            	}
+	          /*------------------
+	        	//now let's wipe all input and let the user know they can/must restart. 
+	        	//this section should wipe all data from the program.clear the arraylist, etc.
+	        	startNode = null;
+	        	startingNode = false;
+	        	for(int p = 0; p < AdjacencyList.size(); p++) 
+	        	{
+	        		AdjacencyList.get(p).clear();									//commented out for phase 2- we should be able to change the duration after processing. 
+	        	}
+	        	intForDescent.clear();
+	        	strForDescent.clear();
+	        	teststr2 = "";
+	        	AdjacencyList.clear();
+	        	ActivityNameF.setText("");
+	        	DependenciesF.setText("");
+	        	DurationF.setText("");
+	        	
+	        	
+	            //------------------*/ 
+            	intForDescent.clear();
+	        	strForDescent.clear();
+            }
+        	if(counter % 2 == 0)
+        	{
+    			
+    			DuplicateAdjacencyList2.clear(); 
+    			
+        	}
+        	else
+        	{
+        		DuplicateAdjacencyList.clear();
+        	}
+        	
+        	
+        	processed = true;
+            ActivityNameF.setText(""); 
+        	DependenciesF.setText("");
+        	DurationF.setText("");
+            Display.invalidate();						//very important!!!! 
+            Display.validate();
+            Display.repaint();
+            
+            ProcessWindow.setVisible(false);
+    		ProcessWindow.dispose(); 
+        }
+        if(e.getSource() == ProcessCritical)																
+        {
+        	//here, we should implement ONLY critical path tracing. 
+        	criticalonly = true;
+        	//from here, we should execute this if "process normally" is activated.
+        	if(copied == false)
+        	{
+        		for(LinkedList<NetworkNode> j : AdjacencyList)									//**********FIX*****************
+    			{
+    				DuplicateAdjacencyList.add((LinkedList<NetworkNode>) j.clone()); 
+    			}
+        		copied = true; 
+        	}
+        	else
+        	{
+	        	if(counter % 2 == 0)
+	        	{
+	    			for(LinkedList<NetworkNode> j : DuplicateAdjacencyList)  									//**********FIX*****************
+	    			{
+	    				DuplicateAdjacencyList2.add((LinkedList<NetworkNode>) j.clone()); 
+	    			}
+	    			counter++;
+	        	}
+	        	else
+	        	{
+	        		for(LinkedList<NetworkNode> j : DuplicateAdjacencyList2)									//**********FIX*****************
+	    			{
+	    				DuplicateAdjacencyList.add((LinkedList<NetworkNode>) j.clone());  
+	    			}
+	    			counter++;
+	        	}
+        	}
+        	///
+        	boolean checkfornulls = false;
+        	for(int i = 0; i < AdjacencyList.size(); i++)
+        	{
+        		int checker = AdjacencyList.get(i).getFirst().getDuration();
+        		if(checker == -1)
+        		{
+        			checkfornulls = true;
+        			break;
+        		}
+        	}
+        	///
+        	if(checkfornulls == true)
+        	{
+        		textArea.setText("Error adding nodes: You've likely forgotten to enter a node! \nAt some point, there was a node that was entered with a dependency, \nbut that dependency was never itself entered. \n\nThe current input has been saved, please finish or restart!");
+        		Display.getContentPane().add(scrollPane, BorderLayout.CENTER); 
+        	}
+        	else if(AdjacencyList.size() < 2)
+            {
+            	textArea.setText("Cannot process: Less than 2 Nodes Entered.\n\nThe input values are still in the system, please continue."); 					//check this. 2+ nodes needed for list?
+            }             
+            else
+            {
+            	if(processed == false)
+            	{
+		            String test = printPaths(AdjacencyList, startNode);
+		            test = "Critical Paths in the Network:\n\n" + test;
+		            textArea.setText("" + test + "\n\n\tProgram finsished. If you'd like to \n\tchange a node's duration and re-process, \n\tplease re-enter the node \n\tto the left. \n\tYou can also write to a file at this time!"); 
+		            Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
+            	}
+            	else
+            	{
+            		if(counter % 2 != 0)  
+            		{
+	            		String test = printPaths(DuplicateAdjacencyList, startNode);
+			            test = "Critical Paths in the Network:\n\n" + test;
+			            textArea.setText("" + test + "\n\n\tProgram finsished. If you'd like to \n\tchange a node's duration and re-process, \n\tplease re-enter the node \n\tto the left. \n\tYou can also write to a file at this time!"); 
+			            Display.getContentPane().add(scrollPane, BorderLayout.CENTER); 
+            		}
+            		else
+            		{
+            			String test = printPaths(DuplicateAdjacencyList2, startNode);
+			            test = "Critical Paths in the Network:\n\n" + test; 
+			            textArea.setText("" + test + "\n\n\tProgram finsished. If you'd like to \n\tchange a node's duration and re-process, \n\tplease re-enter the node \n\tto the left. \n\tYou can also write to a file at this time!"); 
+			            Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
+            		}
+            	}
+	          /*------------------
+	        	//now let's wipe all input and let the user know they can/must restart. 
+	        	//this section should wipe all data from the program.clear the arraylist, etc.
+	        	startNode = null;
+	        	startingNode = false;
+	        	for(int p = 0; p < AdjacencyList.size(); p++) 
+	        	{
+	        		AdjacencyList.get(p).clear();									//commented out for phase 2- we should be able to change the duration after processing. 
+	        	}
+	        	intForDescent.clear();
+	        	strForDescent.clear();
+	        	teststr2 = "";
+	        	AdjacencyList.clear();
+	        	ActivityNameF.setText("");
+	        	DependenciesF.setText("");
+	        	DurationF.setText("");
+	        	
+	        	
+	            //------------------*/ 
+            	intForDescent.clear(); 
+	        	strForDescent.clear();
+            }
+        	if(counter % 2 == 0)
+        	{
+    			
+    			DuplicateAdjacencyList2.clear(); 
+    			
+        	}
+        	else
+        	{
+        		DuplicateAdjacencyList.clear();
+        	}
+        	
+        	
+        	processed = true;
+            ActivityNameF.setText(""); 
+        	DependenciesF.setText("");
+        	DurationF.setText("");
+            Display.invalidate();						//very important!!!! 
+            Display.validate();
+            Display.repaint();
+            
+            ProcessWindow.setVisible(false);
+    		ProcessWindow.dispose();
+        	
+        }
     }
     
     
@@ -807,10 +964,33 @@ public class NetworkList extends JFrame implements ActionListener
         	}
         }
     	toReturn = "";
+    	criticalToReturn = "";
     	for(int i = 0; i < intForDescent.size(); i++) 
     	{
     		toReturn += strForDescent.get(i) + ": " + intForDescent.get(i).toString() + "\n";
     	}
+    	int countofcrits = 0;
+    	for(int i = 0; i < intForDescent.size(); i++)
+    	{
+    		if(intForDescent.get(i) == intForDescent.get(0))
+    		{
+    			countofcrits++;
+    		}
+    		else
+    		{
+    			break;
+    		}
+    	}
+    	for(int i = 0; i < countofcrits; i++)
+    	{
+    		criticalToReturn += strForDescent.get(i) + ": " + intForDescent.get(i).toString() + "\n";
+    	}
+    	if(criticalonly == true)
+    	{
+    		criticalonly = false;
+    		return criticalToReturn; 
+    	}
+    	
     	return toReturn;
     }
     
