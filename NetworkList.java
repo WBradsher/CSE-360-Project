@@ -1,17 +1,22 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 public class NetworkList extends JFrame implements ActionListener
 {
     static int WIDTH = 150;
     static int HEIGHT = 450;
     JFrame Display = new JFrame("Network List");
+    JFrame FileWindow = new JFrame("Create File"); 
     FlowLayout flow = new FlowLayout();
     FlowLayout DisplayFlow = new FlowLayout();
     JLabel DisplayList = new JLabel();
     JLabel aLabel = new JLabel("Activity Name:");
-    JLabel blabel = new JLabel("Duration: ");
+    JLabel blabel = new JLabel("Duration: "); 
     JLabel clabel = new JLabel("Dependencies: "); 
     JLabel dlabel = new JLabel("                            ");
     JTextField DurationF = new JTextField(10);
@@ -22,7 +27,13 @@ public class NetworkList extends JFrame implements ActionListener
     JButton process = new JButton("*Process*");
     JButton help = new JButton("Help");
     JButton about = new JButton("About"); 
-    JButton quit = new JButton("Quit"); 
+    JButton quit = new JButton("Quit");
+    JButton CreateFile = new JButton("Create File");
+    JLabel FileLabel = new JLabel("File Name: "); 
+	JTextField FileField = new JTextField(10);
+	JLabel FileTitleLabel = new JLabel("Report Title: ");
+	JTextField FileTitleField = new JTextField(10);
+    JButton FileButton = new JButton("Create File"); 
     String output;
     JScrollPane scroll = new JScrollPane();
     ArrayList<LinkedList<NetworkNode>> AdjacencyList = new ArrayList<LinkedList<NetworkNode>>(); 
@@ -37,7 +48,10 @@ public class NetworkList extends JFrame implements ActionListener
     String teststr2 = "";   
     ArrayList<Integer> intForDescent = new ArrayList<Integer>(); 
     ArrayList<String> strForDescent = new ArrayList<String>();
-    
+    ArrayList<Integer> intForFile = new ArrayList<Integer>(); 
+    ArrayList<String> strForFile = new ArrayList<String>();
+    boolean processed = false;
+    String toReturn = "";
     
     
     public static void main(String[] arguments)
@@ -72,6 +86,7 @@ public class NetworkList extends JFrame implements ActionListener
         help.addActionListener(this);
         about.addActionListener(this);
         quit.addActionListener(this);
+        CreateFile.addActionListener(this); 
         add(aLabel);
         add(ActivityNameF);  
         add(blabel);
@@ -82,8 +97,9 @@ public class NetworkList extends JFrame implements ActionListener
         add(Add);
         add(restart);
         add(process);
+        add(CreateFile);
         add(help);
-        add(about); 
+        add(about);
         add(quit);
     }
 
@@ -253,6 +269,8 @@ public class NetworkList extends JFrame implements ActionListener
         	//this section should wipe all data from the program.clear the arraylist, etc.
         	startNode = null;
         	startingNode = false;
+        	processed = false;
+        	toReturn = "";
         	for(int p = 0; p < AdjacencyList.size(); p++) 
         	{
         		AdjacencyList.get(p).clear();
@@ -270,7 +288,7 @@ public class NetworkList extends JFrame implements ActionListener
         }
         if(e.getSource() == process)
         {
-        	
+        	processed = true;
         	///
         	boolean checkfornulls = false;
         	for(int i = 0; i < AdjacencyList.size(); i++)
@@ -297,17 +315,17 @@ public class NetworkList extends JFrame implements ActionListener
             	
 	            String test = printPaths(AdjacencyList, startNode);
 	            test = "All Paths in the Network:\n\n" + test;
-	            textArea.setText("" + test + "\n\n\tProgram finsished. All nodes cleared!"); 
-	            Display.getContentPane().add(scrollPane, BorderLayout.CENTER);   
+	            textArea.setText("" + test + "\n\n\tProgram finsished. If you'd like to \n\tchange a node's duration and re-process, \n\tplease re-enter the node \n\tto the left. \n\tYou can also write to a file at this time!"); 
+	            Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
 	            
-	          //------------------
+	          /*------------------
 	        	//now let's wipe all input and let the user know they can/must restart. 
 	        	//this section should wipe all data from the program.clear the arraylist, etc.
 	        	startNode = null;
 	        	startingNode = false;
 	        	for(int p = 0; p < AdjacencyList.size(); p++) 
 	        	{
-	        		AdjacencyList.get(p).clear();
+	        		AdjacencyList.get(p).clear();									//commented out for phase 2- we should be able to change the duration after processing. 
 	        	}
 	        	intForDescent.clear();
 	        	strForDescent.clear();
@@ -318,7 +336,7 @@ public class NetworkList extends JFrame implements ActionListener
 	        	DurationF.setText("");
 	        	
 	        	
-	            //------------------
+	            //------------------*/ 
             }
             
         	
@@ -417,12 +435,87 @@ public class NetworkList extends JFrame implements ActionListener
             Display.dispose();
 
         }
+        if(e.getSource() == CreateFile)
+        {
+        	FileWindow.setSize(250, 150);
+        	FileWindow.setLocation(800, 320); 
+        	FileWindow.setLayout(DisplayFlow);
+        	FileWindow.setVisible(true);
+        	//FileWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
+        	//FileWindow.getContentPane().add(scrollPane, BorderLayout.CENTER);
+        	
+        	FileButton.addActionListener(this);
+        	
+        	FileWindow.add(FileTitleLabel);
+        	FileWindow.add(FileTitleField);
+        	FileWindow.add(FileLabel);
+        	FileWindow.add(FileField);
+        	FileWindow.add(FileButton);
+        	
+        }
+        if(e.getSource() == FileButton)
+    	{
+        	if(processed == true)
+        	{
+	        	//let's build our file content and write here.
+	        	String str = "";											//string to write to file
+	        	
+	        	
+	        	String ReportTitle = "Report Title: " + FileTitleField.getText();				//report title for str
+	        	
+	        	
+	        	DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	        	Date date = new Date();
+	        	String dateTime = "Created: " + dateFormat.format(date);					//date and time for str
+	        	
+	        	
+	        	String allNodes = "";
+	        	
+	        	for(int i = 0; i < AdjacencyList.size(); i++)
+	        	{
+	        		String temp = AdjacencyList.get(i).getFirst().getName(); 
+	        		strForFile.add(temp);
+	        	}
+	        	strForFile.sort(Comparator.nullsFirst(Comparator.comparing(String::length).thenComparing(Comparator.naturalOrder())));
+	        	for(int i = 0 ; i < strForFile.size(); i++)
+	        	{
+	        		allNodes += strForFile.get(i) + ", ";
+	        	}
+	        	allNodes = "All Nodes in Alphanumeric Order: \n\t" + allNodes.substring(0, allNodes.length() - 2); 
+	        	
+	        	str = ReportTitle + "\n\n" + dateTime + "\n\n" + allNodes + "\n\n" + "All Network Paths: \n" + toReturn;
+	        	
+	        	//write to the file!
+	        	String fileName = FileField.getText() + ".txt"; 
+	        	try {
+					PrintWriter file = new PrintWriter(fileName); 
+					file.print(str);
+					file.close();
+				} catch (FileNotFoundException e1) { 
+					e1.printStackTrace();
+				}
+	        	
+	        	
+	        	
+	        	
+	        	str = "";
+	    		FileWindow.setVisible(false);
+	    		FileWindow.dispose();
+        	}
+        	else
+        	{
+        		//haven't processed nodes yet! Display "need to process" message.
+        		FileWindow.setVisible(false);
+	    		FileWindow.dispose();  
+	    		textArea.setText("\tError Writing to File:\n\t You must PROCESS the nodes to \n\tdetermine the critical path before \n\twriting to a file! \n\tPlease process and try again.");
+        		Display.getContentPane().add(scrollPane, BorderLayout.CENTER);
+        	}
+    	}
     }
     
     
     public String printPaths(ArrayList<LinkedList<NetworkNode>> AList, NetworkNode starter)				//CAN'T FORGET TO CLEAR ALL DATA AT VERY END
-    {
-    	String toReturn = "";  
+    { 
     	NetworkNode tracker = null;    
     	boolean pushedFlag = false;    
     	boolean poppedFlag = false;   
@@ -440,6 +533,11 @@ public class NetworkList extends JFrame implements ActionListener
     		{
     			endNode = AList.get(i).getFirst();
     		}
+    	}
+    	if(endNode == null)
+    	{
+    		toReturn = "Error: encountered a cycle!";
+    		return toReturn;
     	}
     	
     	//okay, now let's make a stack for a DFS
@@ -534,7 +632,7 @@ public class NetworkList extends JFrame implements ActionListener
 	        				tracker = stack.pop();					//when we pop off the stack, we should remove it's apearance (1 level only?) "upstream" of where it was.
 	        				count += tracker.getDuration();
 	        				nodesInPath += AList.get(i).getFirst().getName();
-	        				nodesInPath += tracker.getName();
+	        				nodesInPath += tracker.getName(); 
 	        				
 	        				
 	        				
@@ -606,7 +704,7 @@ public class NetworkList extends JFrame implements ActionListener
 	    	}
     	}
     	
-
+    	AList.get(0).set(0, startNode);
             count = 0;
     	//we should sort our results in descending order!
         int inthelper;
