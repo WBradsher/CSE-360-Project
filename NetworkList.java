@@ -253,6 +253,8 @@ public class NetworkList extends JFrame implements ActionListener
                             	Otemp.add(temp);													//THIS MIGHT HAVE TO BE AdjacencyList.get(location).getFirst() INSTEAD OF TEMP
                             	AdjacencyList.add(Otemp);		//add to array 
                     		}
+    	                	//HERE- THIS MIGHT MESS THINGS UP
+    	                	dependencyFound = false;
     	                }
     	                
     	                textArea.setText("Node " + temp.getName() + " added successfully!");
@@ -983,7 +985,7 @@ public class NetworkList extends JFrame implements ActionListener
     	}
     	for(int i = 0; i < countofcrits; i++)
     	{
-    		criticalToReturn += strForDescent.get(i) + ": " + intForDescent.get(i).toString() + "\n";
+    		criticalToReturn += strForDescent.get(i) + ": " + intForDescent.get(i).toString() + "\n"; 
     	}
     	if(criticalonly == true)
     	{
